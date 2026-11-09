@@ -55,12 +55,4 @@ blender --background --factory-startup --python tests/smoke_hi3d_blender.py
 
 Other `smoke_*.py` and `integration_*.py` scripts cover connection/lifecycle scenarios. Read their docstrings before running: some require the official runtime or a configured Codex executable. Offline unit/browser/package checks do not start paid provider jobs.
 
-## Working boundaries
-
-- Access `bpy` only on Blender's main thread.
-- Preserve server thread, turn and item identities in UI projections.
-- Preserve bridge authentication and bounded state/resource handling.
-- Exclude credentials and private transcripts from commits and published receipts.
-- Report live integration results separately from simulated checks.
-
 See [architecture](../ARCHITECTURE.md), [frontend notes](../frontend/README.md) and [contribution guide](../CONTRIBUTING.md).

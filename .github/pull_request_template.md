@@ -1,7 +1,1 @@
-## Change
-
-Describe the problem and resulting behavior.
-
-## Validation
-
-List relevant checks and results. Distinguish fixture checks from live Blender/model/provider tests.
+Briefly describe what this improves. Add any useful testing notes if you have them.

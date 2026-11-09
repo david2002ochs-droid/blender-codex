@@ -68,7 +68,7 @@ Automated checks cover transport, context, history, provider behavior and the co
 
 ## Contributing and license
 
-Bug reports, setup improvements and focused pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+Ideas, bug reports, documentation improvements and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Original project code is licensed under **GPL-3.0-or-later**; see [LICENSE](LICENSE). Third-party components retain their licenses, including the MIT-licensed Deepblick UI and Microsoft WebView2 terms. See [third-party notices and credits](THIRD_PARTY_NOTICES.md).
 
