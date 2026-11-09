@@ -86,6 +86,8 @@ class ViewLifecycleTests(unittest.TestCase):
         self.ui = importlib.util.module_from_spec(spec)
         sys.modules[name] = self.ui
         spec.loader.exec_module(self.ui)
+        # The host and Blender are fixtures; emulate their Windows platform too.
+        self.ui.sys = NS(platform="win32")
         self.ui._layout_loaded = True
         self.ui._snapshot = lambda _context: {}
         self.minimized = False

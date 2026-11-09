@@ -1,11 +1,13 @@
 // Run the current compiled UI contracts from a fresh checkout.
 const {spawnSync} = require('node:child_process');
 const {createRequire} = require('node:module');
+const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const resolveBrowserDependency = createRequire(path.join(__dirname, 'browser/package.json'));
 const env = {...process.env};
 env.PLAYWRIGHT_MODULE ||= resolveBrowserDependency.resolve('playwright');
+fs.mkdirSync(path.join(root, '.runtime'), {recursive: true});
 function run(command, args) {
   const result = spawnSync(command, args, {cwd: root, env, stdio: 'inherit'});
   if (result.error) throw result.error;
