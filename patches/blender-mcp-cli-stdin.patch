@@ -1,0 +1,9 @@
+--- a/blmcp/tools_helpers/blender_cli.py
++++ b/blmcp/tools_helpers/blender_cli.py
+@@ -69,5 +69,6 @@
+         proc = subprocess.run(
+             [blender, "--background", blend_file, "--python-expr", wrapper],
++            stdin=subprocess.DEVNULL,
+             capture_output=True,
+             text=True,
+             timeout=timeout,

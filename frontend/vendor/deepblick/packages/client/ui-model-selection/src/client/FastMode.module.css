@@ -1,0 +1,83 @@
+.root {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding-inline: 4px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.label svg { transition: color 160ms ease-out, fill 160ms ease-out; }
+.root[data-enabled='true'] .label svg { color: var(--dsw-alias-link); fill: currentColor; }
+.switch[aria-checked='true'] { background: var(--dsw-alias-link); }
+.switch { outline-offset: 3px; }
+
+.confirmation {
+  position: fixed;
+  z-index: 1100;
+  box-sizing: border-box;
+  width: min(288px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  padding: 14px;
+  border: 0;
+  border-radius: var(--dsw-radius-lg);
+  --dsw-alias-button-primary-fill: var(--dsw-alias-link);
+  --dsw-alias-button-primary-hover: color-mix(in srgb, var(--dsw-alias-link) 90%, var(--dsw-alias-label-primary));
+  --dsw-elevation-stroke-color: var(--dsw-alias-border-l1);
+  box-shadow: var(--dsw-elevation-prominent);
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 20px;
+  animation: fast-confirm 160ms ease-out;
+}
+
+.confirmation h3 { margin: 0 0 6px; font-size: 14px; line-height: 20px; font-weight: 500; }
+.confirmation p { margin: 0; color: var(--dsw-alias-label-secondary); }
+.confirmation p[role='alert'] { margin-top: 8px; color: var(--dsw-alias-state-error-primary); }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+@keyframes fast-confirm {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirmation { animation: none; }
+  .label svg, .switch > span { transition: none; }
+}
+
+.root { position: relative; }
+
+.planBridge {
+  position: absolute;
+  z-index: 1100;
+  inset-inline-end: 0;
+  bottom: 100%;
+  width: min(270px, calc(100vw - 24px));
+  padding-bottom: 6px;
+  visibility: hidden;
+}
+.root:hover .planBridge, .root:focus-within .planBridge { visibility: visible; }
+
+.planPopover {
+  padding: 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-bg-base, white);
+  box-shadow: var(--dsw-elevation-prominent);
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+}
+.planPopover p { margin: 5px 0 8px; color: var(--dsw-alias-label-secondary); }
+.planPopover a { color: var(--dsw-alias-link); }

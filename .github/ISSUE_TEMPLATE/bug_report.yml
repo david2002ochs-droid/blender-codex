@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a reproducible Blender Codex problem
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows, Blender, Codex and Python versions; install or source checkout.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include expected and actual behavior, using a minimal scene if possible.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Relevant logs or screenshots
+      description: Remove credentials, private data and personal paths before posting.

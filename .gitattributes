@@ -1,0 +1,8 @@
+* text=auto eol=lf
+# Preserve the pinned vendor byte hashes across Windows and Unix checkouts.
+/frontend/vendor/deepblick/** -text -whitespace
+/blender_codex/web/DEEPBLICK-LICENSE.txt -text -whitespace
+/blender_codex/native/WebView2-LICENSE.txt -text -whitespace
+# Generated bundles contain intentional whitespace inside third-party strings.
+/blender_codex/web/app.js -whitespace
+/blender_codex/web/styles.css -whitespace
