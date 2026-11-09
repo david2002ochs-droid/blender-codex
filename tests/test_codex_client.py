@@ -226,7 +226,8 @@ class ClientTests(unittest.TestCase):
     def test_explicit_images_are_real_local_image_input_items(self):
         self.launch("images")
         self.wait("ready")
-        with tempfile.TemporaryDirectory() as directory:
+        # Relative paths need the same drive as cwd on Windows CI runners.
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
             paths = []
             for name, data in (("viewport.png", b"\x89PNG\r\n\x1a\nimage"),
                                ("selection.jpeg", b"\xff\xd8\xffimage"),
