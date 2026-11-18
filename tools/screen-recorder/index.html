@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blender-Test aufnehmen</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f3f5;color:#202329;font:16px/1.5 system-ui,sans-serif}main{max-width:900px;margin:40px auto;padding:24px}h1{font-size:28px;margin:0 0 6px}p{margin:0 0 20px;color:#626772}.controls{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}button,a.download{font:inherit;border:1px solid #d2d5da;background:white;color:#202329;border-radius:10px;padding:12px 18px;cursor:pointer;text-decoration:none}button:disabled{opacity:.45;cursor:default}#start{background:#ed8018;border-color:#ed8018;color:#171717}#stop{background:#b82d33;border-color:#b82d33;color:white}button:focus-visible,a:focus-visible{outline:3px solid #2666cd;outline-offset:3px}.status{background:white;border-radius:14px;padding:18px;display:flex;justify-content:space-between;gap:16px;align-items:center}.state{font-weight:600}#timer{font-variant-numeric:tabular-nums;font-size:25px}body[data-recording=true] .state{color:#b82d33}video{display:block;width:100%;max-height:480px;background:#202329;border-radius:14px;margin:20px 0}video[hidden],a[hidden]{display:none}#source,#size{font-size:14px;color:#626772}#error{color:#a62127;white-space:pre-wrap}#result{margin-top:20px}small{display:block;margin-top:16px;color:#626772}@media(max-width:500px){main{padding:16px;margin:12px auto}button{flex:1}}
+</style>
+</head>
+<body data-recording="false"><main>
+<h1>Blender-Test aufnehmen</h1>
+<p>Fenster oder Bildschirm wählen, dann die Aufnahme starten. Ohne Ton. Alles bleibt lokal in diesem Browser.</p>
+<div class="status" role="status" aria-live="polite"><span id="status" class="state">Noch keine Aufnahme</span><span id="timer" aria-label="Aufnahmedauer">00:00</span></div>
+<div class="controls"><button id="choose">1. Fenster / Bildschirm wählen</button><button id="start" disabled>2. Start</button><button id="stop" disabled>Stopp &amp; speichern</button></div>
+<div id="source">Wähle im Browserdialog das Blender-Fenster oder deinen Bildschirm.</div>
+<video id="preview" autoplay muted playsinline hidden aria-label="Live-Vorschau"></video>
+<div id="error" role="alert"></div>
+<section id="result" hidden><a id="download" class="download" hidden>Video speichern (.webm)</a><span id="size"></span></section>
+<small>Die Aufnahme läuft erst, wenn hier „AUFNAHME LÄUFT“ steht. Diese Seite während der Aufnahme geöffnet lassen. Sicherheitsgrenze: 512 MB oder 30 Minuten; danach wird automatisch gestoppt.</small>
+</main>
+<script>
+(() => {
+  const $=id=>document.getElementById(id), choose=$('choose'), start=$('start'), stop=$('stop'), preview=$('preview');
+  const status=$('status'), timer=$('timer'), error=$('error'), download=$('download');
+  const MAX_BYTES=512*1024*1024, MAX_TIME=30*60*1000;
+  let stream=null, recorder=null, chunks=[], bytes=0, started=0, interval=null, videoUrl=null, selecting=false, finalizing=false;
+  function live(){return stream?.getVideoTracks().some(t=>t.readyState==='live');}
+  function recording(){return recorder && recorder.state!=='inactive';}
+  function controls(){choose.disabled=selecting||recording()||finalizing;start.disabled=selecting||!live()||recording()||finalizing;stop.disabled=!recording()||finalizing;}
+  function release(){if(stream){for(const track of stream.getTracks())track.stop();stream=null;}preview.srcObject=null;}
+  function message(value){status.textContent=value;document.title=(value==='AUFNAHME LÄUFT'?'🔴 Aufnahme läuft':'Blender-Test aufnehmen')+' – '+value;}
+  function elapsed(){const secs=Math.floor((performance.now()-started)/1000);timer.textContent=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');}
+  function halt(reason){if(!recording())return;finalizing=true;message(reason||'Aufnahme wird gespeichert …');clearInterval(interval);document.body.dataset.recording='false';controls();recorder.stop();}
+  function fail(exception){error.textContent=exception?.name==='NotAllowedError'?'Die Auswahl wurde abgebrochen oder die Bildschirmfreigabe ist nicht erlaubt. Wähle die Quelle erneut und bestätige sie im Browser.':exception?.name==='NotReadableError'?'Das gewählte Fenster kann gerade nicht aufgenommen werden. Bitte wähle den Bildschirm oder ein anderes Fenster.':exception?.message||String(exception);}
+  choose.addEventListener('click',async()=>{
+    if(recording()||selecting||finalizing)return;
+    error.textContent='';selecting=true;controls();
+    try{
+      if(!window.isSecureContext||!navigator.mediaDevices?.getDisplayMedia)throw new Error('Bitte diese Seite mit dem lokalen Starter in Chrome oder Edge öffnen.');
+      const selected=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:30,max:30}},audio:false});
+      release();stream=selected;preview.srcObject=stream;preview.hidden=false;await preview.play();
+      const track=stream.getVideoTracks()[0];$('source').textContent='Gewählt: '+(track.label||track.getSettings().displaySurface||'Bildschirm');
+      track.addEventListener('ended',()=>{if(recording())halt('Freigabe beendet – Video wird gespeichert …');else{message('Freigabe beendet');controls();}});
+      message('Bereit – noch keine Aufnahme');
+    }catch(exception){fail(exception);message(live()?'Bereit – noch keine Aufnahme':'Noch keine Aufnahme');}
+    finally{selecting=false;controls();}
+  });
+  start.addEventListener('click',()=>{
+    if(!live()||recording()||finalizing)return;
+    try{
+      if(!window.MediaRecorder)throw new Error('MediaRecorder fehlt. Bitte Chrome oder Edge verwenden.');
+      error.textContent='';
+      const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(type=>MediaRecorder.isTypeSupported(type));
+      if(!mime)throw new Error('Dieser Browser kann kein WebM aufnehmen. Bitte Chrome oder Edge verwenden.');
+      recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:4000000});
+      chunks=[];bytes=0;timer.textContent='00:00';$('result').hidden=true;
+      if(videoUrl){URL.revokeObjectURL(videoUrl);videoUrl=null;}
+      recorder.addEventListener('dataavailable',event=>{if(event.data.size){chunks.push(event.data);bytes+=event.data.size;if(bytes>=MAX_BYTES)halt('Dateigrenze erreicht – Video wird gespeichert …');}});
+      recorder.addEventListener('error',event=>{fail(event.error||new Error('Die Aufnahme wurde unterbrochen.'));halt('Aufnahme unterbrochen – vorhandene Daten werden gespeichert …');});
+      recorder.addEventListener('stop',()=>{
+        clearInterval(interval);document.body.dataset.recording='false';
+        const blob=new Blob(chunks,{type:mime});chunks=[];finalizing=false;
+        release();preview.hidden=true;recorder=null;
+        if(blob.size){
+          videoUrl=URL.createObjectURL(blob);download.href=videoUrl;download.download='blender-test-'+new Date().toISOString().replace(/[:.]/g,'-')+'.webm';
+          download.hidden=false;$('result').hidden=false;$('size').textContent=' '+(blob.size/1024/1024).toFixed(1)+' MB';
+          message('Aufnahme beendet – Video bereit');download.click();
+        }else{message('Keine Videodaten gespeichert');error.textContent='Die Aufnahme war leer. Bitte erneut versuchen.';}
+        controls();
+      });
+      recorder.start(1000);started=performance.now();message('AUFNAHME LÄUFT');document.body.dataset.recording='true';
+      interval=setInterval(()=>{elapsed();if(performance.now()-started>=MAX_TIME)halt('Zeitgrenze erreicht – Video wird gespeichert …');},250);controls();
+    }catch(exception){fail(exception);recorder=null;finalizing=false;message('Aufnahme konnte nicht starten');controls();}
+  });
+  stop.addEventListener('click',()=>halt());
+  window.addEventListener('beforeunload',event=>{if(recording()||finalizing){event.preventDefault();event.returnValue='';}});
+  window.addEventListener('pagehide',()=>{if(recording())recorder.stop();release();if(videoUrl)URL.revokeObjectURL(videoUrl);});
+  controls();
+})();
+</script></body></html>
